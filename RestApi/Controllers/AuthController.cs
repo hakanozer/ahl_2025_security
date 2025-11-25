@@ -47,9 +47,11 @@ namespace RestApi.Controllers
         [HttpPost("loginUser")]
         public IActionResult LoginUser(UserLoginDto userDto)
         {
+            //string query = "SELECT * FROM Users WHERE Username = '"+userDto.Username+"' AND Password = '"+userDto.Password+"'";
             string query = "SELECT * FROM Users WHERE Username = {0} AND Password = {1}";
             Console.WriteLine("Query: " + query);
             var userDb = _context.Users.FromSqlRaw(query, userDto.Username, userDto.Password).FirstOrDefault();
+            //var userDb = _context.Users.FromSqlRaw(query).FirstOrDefault();
             if (userDb == null)
             {
                 return Unauthorized("Invalid username or password");
@@ -73,7 +75,8 @@ namespace RestApi.Controllers
             string passwordHash1 = BCrypt.Net.BCrypt.HashPassword(user.Password);
             Console.WriteLine("Hashed Password: " + passwordHash1);
 
-            PasswordManager passwordManager = new PasswordManager();
+            var EncDecKey = _configuration.GetValue<string>("EncDecKey") ?? "";
+            PasswordManager passwordManager = new(EncDecKey);
             string newPass = passwordManager.Encrypt(user.Password);
             Console.WriteLine("Encrypted Password: " + newPass);
 
